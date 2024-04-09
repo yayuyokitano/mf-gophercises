@@ -50,20 +50,18 @@ func startQuiz(file string, shuffle bool, timeLimitSeconds int) error {
 	fmt.Scanln()
 
 	var (
-		questionCount = len(q)
-		correctCount  = 0
-		errc          = make(chan error)
-		stop          = make(chan bool)
-		isCorrectc    = make(chan bool)
+		correctCount = 0
+		errc         = make(chan error)
+		isCorrectc   = make(chan bool)
+		timer        = time.NewTimer(time.Duration(timeLimitSeconds) * time.Second)
 	)
-	go startTimer(stop, time.Duration(timeLimitSeconds)*time.Second)
 
 Quiz:
 	for _, question := range q {
 		go askQuestion(question, isCorrectc, errc)
 
 		select {
-		case <-stop:
+		case <-timer.C:
 			fmt.Println("out of time!")
 			break Quiz
 		case isCorrect := <-isCorrectc:
@@ -77,13 +75,8 @@ Quiz:
 			return err
 		}
 	}
-	fmt.Printf("Quiz complete! Score: %d/%d\n", correctCount, questionCount)
+	fmt.Printf("Quiz complete! Score: %d/%d\n", correctCount, len(q))
 	return nil
-}
-
-func startTimer(stop chan bool, timeLimit time.Duration) {
-	time.Sleep(timeLimit)
-	stop <- true
 }
 
 func askQuestion(question []string, isCorrectc chan bool, errc chan error) {
