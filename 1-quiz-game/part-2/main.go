@@ -34,7 +34,12 @@ func startQuiz(file string, shuffle bool, timeLimitSeconds int) error {
 	if err != nil {
 		return fmt.Errorf("open quiz: %w", err)
 	}
-	defer f.Close()
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(f)
 
 	q, err := csv.NewReader(f).ReadAll()
 	if err != nil {
@@ -47,7 +52,10 @@ func startQuiz(file string, shuffle bool, timeLimitSeconds int) error {
 	}
 
 	fmt.Printf("Once you press enter, you will have %d seconds to answer %d questions.\n", timeLimitSeconds, len(q))
-	fmt.Scanln()
+	_, err = fmt.Scanln()
+	if err != nil {
+		return fmt.Errorf("scan start: %w", err)
+	}
 
 	var (
 		correctCount = 0
@@ -86,7 +94,10 @@ func askQuestion(question []string, isCorrectc chan bool, errc chan error) {
 	fmt.Println(question[0])
 
 	var answer string
-	fmt.Scanln(&answer)
+	_, err := fmt.Scanln(&answer)
+	if err != nil {
+		errc <- fmt.Errorf("scan answer: %w", err)
+	}
 
 	isCorrectc <- strings.TrimSpace(strings.ToLower(answer)) == strings.TrimSpace(strings.ToLower(question[1]))
 }

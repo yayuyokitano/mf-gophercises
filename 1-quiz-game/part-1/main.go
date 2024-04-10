@@ -32,7 +32,12 @@ func startQuiz(file string, shuffle bool) error {
 	if err != nil {
 		return fmt.Errorf("open quiz: %w", err)
 	}
-	defer f.Close()
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(f)
 
 	q, err := csv.NewReader(f).ReadAll()
 	if err != nil {
@@ -73,6 +78,9 @@ func askQuestion(question []string) (bool, error) {
 	fmt.Println(question[0])
 
 	var answer string
-	fmt.Scanln(&answer)
+	_, err := fmt.Scanln(&answer)
+	if err != nil {
+		return false, fmt.Errorf("scan answer: %w", err)
+	}
 	return strings.TrimSpace(strings.ToLower(answer)) == strings.TrimSpace(strings.ToLower(question[1])), nil
 }
