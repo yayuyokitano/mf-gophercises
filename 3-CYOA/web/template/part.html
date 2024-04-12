@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Choose Your Own Adventure</title>
+</head>
+<body>
+    <h1>{{.Title}}</h1>
+    {{range $storyParagraph := .Story}}
+        <p>{{$storyParagraph}}</p>
+    {{end}}
+    <ul>
+    {{range $option := .Options}}
+        <li><a href="/{{$option.Arc}}">{{$option.Text}}</a></li>
+    {{end}}
+    </ul>
+</body>
+</html>

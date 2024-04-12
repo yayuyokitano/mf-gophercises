@@ -18,6 +18,27 @@ type AddRedirectParam struct {
 	TargetURL string `json:"target_url"`
 }
 
+func main() {
+	var err error
+	db, err = sql.Open("sqlite3", "./urls.db")
+	if err != nil {
+		fmt.Printf("start database: %s\n", err)
+		return
+	}
+	defer func(db *sql.DB) {
+		err := db.Close()
+		if err != nil {
+			fmt.Printf("close database: %s\n", err)
+		}
+	}(db)
+
+	http.HandleFunc("/", handleAllQueries)
+	fmt.Println("Starting server on port 8080")
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		fmt.Printf("start server: %s\n", err)
+	}
+}
+
 func handleAllQueries(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		addNewURL(w, r)
@@ -76,25 +97,4 @@ func redirectURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, targetURL, http.StatusFound)
-}
-
-func main() {
-	var err error
-	db, err = sql.Open("sqlite3", "./urls.db")
-	if err != nil {
-		fmt.Printf("start database: %s\n", err)
-		return
-	}
-	defer func(db *sql.DB) {
-		err := db.Close()
-		if err != nil {
-			fmt.Printf("close database: %s\n", err)
-		}
-	}(db)
-
-	http.HandleFunc("/", handleAllQueries)
-	fmt.Println("Starting server on port 8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		fmt.Printf("start server: %s\n", err)
-	}
 }
