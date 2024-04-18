@@ -1,0 +1,24 @@
+<html>
+<body data-expected='[{
+  "href": "/nested-outer",
+  "text": "Links should work even nested with anchors without hrefs"
+}, {
+  "href": "/nested-inner",
+  "text": "anchors without hrefs"
+}, {
+  "href": "/not-first-attr",
+  "text": "This should still work"
+}]'>
+  <a>No href</a>
+  <a href="/nested-outer">
+    Links should work
+    <a id="no-href">
+      even nested with
+      <a href="/nested-inner">
+        anchors without hrefs
+      </a>
+    </a>
+  </a>
+  <a target="_blank" href="/not-first-attr">This should still work</a>
+</body>
+</html>
